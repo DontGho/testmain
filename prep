@@ -1,9 +1,8 @@
+local TESTING = false
+
 local RunService = game:GetService('RunService')
 local TextService = game:GetService('TextService')
 local UserInputService = game:GetService('UserInputService')
-
-local ScreenGui = game:GetObjects("rbxassetid://99852798675591")[1]
-ScreenGui.Enabled = false
 
 local ScreenGui = game:GetObjects("rbxassetid://99852798675591")[1]
 ScreenGui.Enabled = false
@@ -49,18 +48,18 @@ local Exclusions = Library.Exclusions
 
 local Assets = ScreenGui.Assets
 local Modules = {
-	Dropdown = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Dropdown.lua", true))(),
-	Toggle = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Toggle.lua", true))(),
-	Popup = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Popup.lua", true))(),
-	Slider = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Slider.lua", true))(),
-	Keybind = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Keybind.lua", true))(),
-	TextBox = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/TextBox.lua", true))(),
-	Navigation = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Navigation.lua", true))(),
-	ColorPicker = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/ColorPicker.lua", true))(),
+	Dropdown = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Dropdown.lua`, true))(),
+	Toggle = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Toggle.lua`, true))(),
+	Popup = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Popup.lua`, true))(),
+	Slider = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Slider.lua`, true))(),
+	Keybind = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Keybind.lua`, true))(),
+	TextBox = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/TextBox.lua`, true))(),
+	Navigation = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Navigation.lua`, true))(),
+	ColorPicker = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/ColorPicker.lua`, true))(),
 }
 
-local Utility = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Utility.lua", true))()
-local Theme = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Modules/Theme.lua", true))()
+local Utility = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Utility.lua`, true))()
+local Theme = loadstring(game:HttpGet(`https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/{TESTING and "testing" or "main"}/Modules/Theme.lua`, true))()
 Library.Theme = Theme
 
 local Popups = ScreenGui.Popups
@@ -1153,17 +1152,18 @@ function Library:createKeybind(options: table, parent, scrollingFrame)
 	local Background = TextLabel.Background
 	
 	local TextButton = Background.TextButton
-	
-	if not table.find(self.Exclusions, options.default) then
-		TextButton.Text = options.default
-	else
-		TextButton.Text = "None"
-		warn("You already have this key binded")
-	end
 
-	if options.default ~= "None" then
-		table.insert(Exclusions, options.default)
-	end
+	TextButton.Text = options.default
+	-- if not table.find(self.Exclusions, options.default) then
+	-- 	TextButton.Text = options.default
+	-- else
+	-- 	TextButton.Text = "None"
+	-- 	warn("You already have this key binded")
+	-- end
+
+	-- if options.default ~= "None" then
+	-- 	table.insert(Exclusions, options.default)
+	-- end
 
 	local Context = Utility:validateContext({
 		default = {Value = options.default, ExpectedType = "string"},
