@@ -48,6 +48,7 @@ local Library = {
 	TooltipInstance = nil,
 	TooltipShowId = 0,
 	TooltipMoveConnection = nil,
+	TooltipTweens = {},
 	IconVisible = true,
 }
 Library.__index = Library
@@ -196,14 +197,24 @@ function Library:createTooltip()
 	return Tooltip
 end
 
+function Library:cancelTooltipTweens()
+	for _, tween in ipairs(Library.TooltipTweens) do
+		tween:Cancel()
+	end
+	Library.TooltipTweens = {}
+end
+
 function Library:showTooltip(element, text)
 	if not text or text == "" then return end
 
 	local Tooltip = Library:createTooltip()
 	local TextLabel = Tooltip.Text
 
-	-- Cancel any pending hide by bumping the ID
+	-- Bump ID so any pending hide callback gets cancelled
 	Library.TooltipShowId = Library.TooltipShowId + 1
+
+	-- Kill any running fade-out tweens immediately
+	Library:cancelTooltipTweens()
 
 	-- Disconnect old move connection if any
 	if Library.TooltipMoveConnection then
@@ -215,9 +226,9 @@ function Library:showTooltip(element, text)
 	local textSize = TextService:GetTextSize(text, 13, Enum.Font.Gotham, Vector2.new(300, 1000))
 	Tooltip.Size = UDim2.fromOffset(textSize.X + 16, textSize.Y + 12)
 
-	-- Snap transparency instantly so it's ready for the fade in
-	Tooltip.BackgroundTransparency = 1
-	TextLabel.TextTransparency = 1
+	-- Snap fully visible instantly
+	Tooltip.BackgroundTransparency = 0
+	TextLabel.TextTransparency = 0
 
 	local function updatePosition()
 		local mousePos = UserInputService:GetMouseLocation()
@@ -228,9 +239,6 @@ function Library:showTooltip(element, text)
 
 	updatePosition()
 	Tooltip.Visible = true
-
-	Utility:tween(Tooltip, { BackgroundTransparency = 0 }, 0.15, "Quart", "Out"):Play()
-	Utility:tween(TextLabel, { TextTransparency = 0 }, 0.15, "Quart", "Out"):Play()
 
 	local moveConnection = UserInputService.InputChanged:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -247,15 +255,18 @@ function Library:hideTooltip()
 
 	local Tooltip = Library.TooltipInstance
 	local TextLabel = Tooltip.Text
-
-	-- Capture the current ID so we can check if a new show happened during the wait
 	local hideId = Library.TooltipShowId
 
-	Utility:tween(Tooltip, { BackgroundTransparency = 1 }, 0.1, "Quart", "Out"):Play()
-	Utility:tween(TextLabel, { TextTransparency = 1 }, 0.1, "Quart", "Out"):Play()
+	-- Cancel any previous tweens before starting new fade-out
+	Library:cancelTooltipTweens()
+
+	local t1 = Utility:tween(Tooltip, { BackgroundTransparency = 1 }, 0.1, "Quart", "Out")
+	local t2 = Utility:tween(TextLabel, { TextTransparency = 1 }, 0.1, "Quart", "Out")
+	t1:Play()
+	t2:Play()
+	Library.TooltipTweens = { t1, t2 }
 
 	task.delay(0.1, function()
-		-- Only hide if no new tooltip was shown while we were waiting
 		if Library.TooltipShowId == hideId then
 			Tooltip.Visible = false
 
@@ -265,6 +276,22 @@ function Library:hideTooltip()
 			end
 		end
 	end)
+end
+
+function Library:forceHideTooltip()
+	if not Library.TooltipInstance then return end
+
+	Library.TooltipShowId = Library.TooltipShowId + 1
+	Library:cancelTooltipTweens()
+
+	Library.TooltipInstance.BackgroundTransparency = 1
+	Library.TooltipInstance.Text.TextTransparency = 1
+	Library.TooltipInstance.Visible = false
+
+	if Library.TooltipMoveConnection then
+		Library.TooltipMoveConnection:Disconnect()
+		Library.TooltipMoveConnection = nil
+	end
 end
 
 local tabResizing = false
@@ -1928,6 +1955,9 @@ end
 
 function Library:ToggleUI(state)
 	if Library._toggling then return end
+
+	-- Kill any visible tooltip immediately
+	Library:forceHideTooltip()
 
 	local targetVisible
 	if typeof(state) == "boolean" then
