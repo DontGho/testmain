@@ -243,8 +243,8 @@ function Library:showTooltip(element, text)
         local sy = ScreenGui.AbsoluteSize.Y
         local tw = Tooltip.AbsoluteSize.X
         local th = Tooltip.AbsoluteSize.Y
-        local x = math.clamp(mouse.X + 12, 4, sx - tw - 4)
-        local y = math.clamp(mouse.Y + 18, 4, sy - th - 4)
+        local x = math.clamp(mouse.X + -5, 4, sx - tw - 4)
+        local y = math.clamp(mouse.Y + -25, 4, sy - th - 4)
         Tooltip.Position = UDim2.fromOffset(x, y)
     end
 
